@@ -6,7 +6,7 @@
 
 **Architecture:** Use a small Vite + React static app with one focused React component and one stylesheet. The page is a single landing experience with visible future-entry placeholders, no router, and no backend.
 
-**Tech Stack:** Vite, React, TypeScript, CSS, Vercel.
+**Tech Stack:** Vite, React, TypeScript, CSS, Vitest, Testing Library, Vercel.
 
 ---
 
@@ -17,6 +17,8 @@
 - Create `src/main.tsx`: React entry point.
 - Create `src/App.tsx`: single page content, navigation, hero, future placeholders, and footer.
 - Create `src/styles.css`: global styles, responsive layout, ambient visuals, focus states, and reduced-motion handling.
+- Create `src/App.test.tsx`: rendering tests for the landing page contract.
+- Create `src/test/setup.ts`: Testing Library setup.
 - Create `tsconfig.json`: TypeScript compiler settings for the app.
 - Create `tsconfig.node.json`: TypeScript settings for Vite config.
 - Create `vite.config.ts`: Vite React plugin config.
@@ -43,17 +45,25 @@ No `vercel.json` is planned because Vercel can auto-detect and deploy the Vite s
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.6.3",
-    "vite": "^6.0.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.8"
+  }
 }
 ```
 
@@ -101,8 +111,7 @@ No `vercel.json` is planned because Vercel can auto-detect and deploy the Vite s
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src"]
 }
 ```
 
@@ -116,7 +125,8 @@ No `vercel.json` is planned because Vercel can auto-detect and deploy the Vite s
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true,
-    "strict": true
+    "strict": true,
+    "noEmit": true
   },
   "include": ["vite.config.ts"]
 }
@@ -125,11 +135,15 @@ No `vercel.json` is planned because Vercel can auto-detect and deploy the Vite s
 `vite.config.ts`:
 
 ```ts
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.ts",
+  },
 });
 ```
 
@@ -154,7 +168,47 @@ Run: `npm install`
 
 Expected: `package-lock.json` is created and npm exits successfully.
 
-## Task 2: Build The Landing Page Content
+## Task 2: Test The Landing Page Contract
+
+**Files:**
+- Create: `src/App.test.tsx`
+- Create: `src/test/setup.ts`
+
+- [ ] **Step 1: Create `src/test/setup.ts`**
+
+```ts
+import "@testing-library/jest-dom/vitest";
+```
+
+- [ ] **Step 2: Create the failing render test in `src/App.test.tsx`**
+
+```tsx
+import { render, screen, within } from "@testing-library/react";
+import { expect, test } from "vitest";
+import App from "./App";
+
+test("renders the voyage.moe landing page with future section entrances", () => {
+  render(<App />);
+
+  expect(screen.getByRole("heading", { level: 1, name: "voyage.moe" })).toBeInTheDocument();
+  expect(screen.getByText(/clear skies, soft signals/i)).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: /see the map/i })).toHaveAttribute("href", "#future");
+
+  const futureSection = screen.getByRole("region", { name: /future sections/i });
+
+  for (const section of ["Profile", "Notes", "Gallery", "Links"]) {
+    expect(within(futureSection).getByText(section)).toBeInTheDocument();
+  }
+});
+```
+
+- [ ] **Step 3: Run test to verify it fails**
+
+Run: `npm test`
+
+Expected: FAIL because `src/App.tsx` has not been created yet.
+
+## Task 3: Build The Landing Page Content
 
 **Files:**
 - Create: `src/App.tsx`
@@ -239,13 +293,19 @@ export default function App() {
 }
 ```
 
-- [ ] **Step 2: Verify TypeScript can resolve component imports**
+- [ ] **Step 2: Run test to verify content passes**
+
+Run: `npm test`
+
+Expected: PASS.
+
+- [ ] **Step 3: Verify TypeScript can resolve component imports**
 
 Run: `npm run build`
 
-Expected before styling exists: FAIL with a missing `./styles.css` error if Task 1 imported it and Task 3 has not created it yet. This confirms the React entry point is wired.
+Expected before styling exists: FAIL with a missing `./styles.css` error if Task 1 imported it and Task 4 has not created it yet. This confirms the React entry point is wired.
 
-## Task 3: Add Visual Design And Responsive Styles
+## Task 4: Add Visual Design And Responsive Styles
 
 **Files:**
 - Create: `src/styles.css`
@@ -583,7 +643,7 @@ Run: `npm run build`
 
 Expected: PASS. Vite writes the static build to `dist/`.
 
-## Task 4: Local Visual Verification
+## Task 5: Local Visual Verification
 
 **Files:**
 - Modify only if verification finds a concrete bug in `src/App.tsx` or `src/styles.css`.
@@ -624,7 +684,7 @@ Run: `npm run build`
 
 Expected: PASS.
 
-## Task 5: Commit The Website
+## Task 6: Commit The Website
 
 **Files:**
 - Stage only files created for the static app and dependency lockfile.
@@ -640,7 +700,7 @@ Expected: Newly created app files are listed. `.superpowers/` remains ignored.
 Run:
 
 ```bash
-git add package.json package-lock.json index.html tsconfig.json tsconfig.node.json vite.config.ts src/main.tsx src/App.tsx src/styles.css
+git add package.json package-lock.json index.html tsconfig.json tsconfig.node.json vite.config.ts src/main.tsx src/App.tsx src/App.test.tsx src/styles.css src/test/setup.ts docs/superpowers/plans/2026-06-05-voyage-moe.md
 ```
 
 Expected: only app files are staged.
@@ -655,7 +715,7 @@ git commit -m "Build voyage.moe landing page"
 
 Expected: commit succeeds.
 
-## Task 6: Deploy To Vercel And Attach Domain
+## Task 7: Deploy To Vercel And Attach Domain
 
 **Files:**
 - Modify no source files unless Vercel requires a config change.
