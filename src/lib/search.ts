@@ -2,13 +2,14 @@ import { friendItems } from "@/content/friends";
 import { projectItems } from "@/content/projects";
 import { releaseItems } from "@/content/releases";
 import { updateItems } from "@/content/updates";
+import { getEnabledPlugins } from "@/plugins/registry";
 import { getPublishedPosts } from "./content";
 
 export type SearchEntry = {
   title: string;
   description: string;
   href: string;
-  section: "blog" | "project" | "update" | "friend" | "release";
+  section: "blog" | "project" | "update" | "friend" | "release" | "plugin";
   slug: string;
   date?: string;
   tags: string[];
@@ -29,6 +30,7 @@ function searchableText(parts: Array<string | string[] | undefined>) {
 
 export async function createSearchIndex(): Promise<SearchEntry[]> {
   const posts = await getPublishedPosts();
+  const plugins = getEnabledPlugins();
 
   return [
     ...posts.map((post) => ({
@@ -78,6 +80,15 @@ export async function createSearchIndex(): Promise<SearchEntry[]> {
       slug: slugify(friend.name),
       tags: [],
       text: searchableText([friend.name, friend.description, friend.url]),
+    })),
+    ...plugins.map((plugin) => ({
+      title: plugin.name,
+      description: plugin.description,
+      href: "/versions",
+      section: "plugin" as const,
+      slug: plugin.id,
+      tags: [plugin.version, ...plugin.slots, ...plugin.permissions],
+      text: searchableText([plugin.name, plugin.description, plugin.version, plugin.slots, plugin.permissions, "extension"]),
     })),
   ];
 }
