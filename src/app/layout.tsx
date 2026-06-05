@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeScript } from "@/components/ThemeScript";
+import { site } from "@/content/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://voyage.moe"),
+  metadataBase: new URL(site.url),
   title: {
-    default: "voyage.moe",
-    template: "%s | voyage.moe",
+    default: site.name,
+    template: `%s | ${site.name}`,
   },
-  description: "A clear and quiet content portal for notes, projects, images, and links.",
+  description: site.description,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN">
-      <body>{children}</body>
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }
