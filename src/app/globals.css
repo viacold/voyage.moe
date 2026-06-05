@@ -499,7 +499,7 @@ input:focus-visible {
 
   .theme-switcher {
     width: 100%;
-    overflow-x: auto;
+    flex-wrap: wrap;
   }
 
   .hero-panel {
@@ -543,7 +543,9 @@ input:focus-visible {
   }
 
   .theme-button {
-    min-width: max-content;
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    min-width: 0;
   }
 }
 

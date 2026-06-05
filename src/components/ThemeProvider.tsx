@@ -10,22 +10,36 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function getInitialTheme(): ThemeId {
-  if (typeof document === "undefined") {
-    return "clear";
-  }
+function isThemeId(theme: string | undefined): theme is ThemeId {
+  return theme === "clear" || theme === "voyage" || theme === "night" || theme === "archive";
+}
 
+function readDocumentTheme(): ThemeId {
   const theme = document.documentElement.dataset.theme;
-  return theme === "voyage" || theme === "night" || theme === "archive" ? theme : "clear";
+  return isThemeId(theme) ? theme : "clear";
 }
 
 export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [theme, setThemeState] = useState<ThemeId>(getInitialTheme);
+  const [theme, setThemeState] = useState<ThemeId>("clear");
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    setThemeState(readDocumentTheme());
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
     document.documentElement.dataset.theme = theme;
-    localStorage.setItem("voyage-theme", theme);
-  }, [theme]);
+    try {
+      localStorage.setItem("voyage-theme", theme);
+    } catch {
+      // Theme switching still works for the session when storage is unavailable.
+    }
+  }, [isHydrated, theme]);
 
   const value = useMemo(
     () => ({
