@@ -8,6 +8,8 @@ import { getPostBySlug, getPublishedPosts } from "@/lib/content";
 import { formatDate } from "@/lib/format";
 import { PluginSlot } from "@/plugins/PluginSlot";
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const posts = await getPublishedPosts();
   return posts.map((post) => ({ slug: post.slug }));

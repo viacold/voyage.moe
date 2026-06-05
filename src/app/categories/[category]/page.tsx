@@ -3,6 +3,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getAllCategories, getPostsByCategory } from "@/lib/content";
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const categories = await getAllCategories();
   return categories.map((category) => ({ category }));

@@ -3,6 +3,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getAllTags, getPostsByTag } from "@/lib/content";
 
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const tags = await getAllTags();
   return tags.map((tag) => ({ tag }));
