@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Migrate `voyage.moe` from the current Vite landing page into a static-first Next.js content portal with Markdown blog posts, responsive public sections, four layout-level themes, site search, and RSS.
+**Goal:** Migrate `voyage.moe` from the current Vite landing page into a static-first Next.js content portal with Markdown blog posts, responsive public sections, four layout-level themes, site search, RSS, version downloads, and plugin extension scaffolding.
 
-**Architecture:** Use the Next.js App Router with Server Components for static content pages and small Client Components only for theme switching and search interaction. Keep content reading, search index creation, and RSS generation in pure TypeScript modules so they can be tested independently before route work. Keep Phase 1 static-only so future admin, auth, and database work can be added without rewriting the public information architecture.
+**Architecture:** Use the Next.js App Router with Server Components for static content pages and small Client Components only for theme switching and search interaction. Keep content reading, release records, plugin registration, search index creation, and RSS generation in pure TypeScript modules so they can be tested independently before route work. Keep Phase 1 static-only so future admin, auth, database, plugin installation, and release automation can be added without rewriting the public information architecture.
 
-**Tech Stack:** Next.js App Router, React, TypeScript, Vitest, Testing Library, `gray-matter`, `remark`, `remark-html`, plain CSS theme tokens, GitHub-to-Vercel deployment.
+**Tech Stack:** Next.js App Router, React, TypeScript, Vitest, Testing Library, `gray-matter`, `remark`, `remark-html`, plain CSS theme tokens, GitHub Releases, GitHub-to-Vercel deployment.
 
 ---
 
@@ -31,6 +31,7 @@ Create or replace these files:
 - `src/app/friends/page.tsx`: Friends route.
 - `src/app/updates/page.tsx`: Updates route.
 - `src/app/about/page.tsx`: About route.
+- `src/app/versions/page.tsx`: Version download route.
 - `src/app/tags/[tag]/page.tsx`: Static tag route.
 - `src/app/categories/[category]/page.tsx`: Static category route.
 - `src/app/rss.xml/route.ts`: RSS XML route handler.
@@ -49,6 +50,10 @@ Create or replace these files:
 - `src/content/projects.ts`: Static project items.
 - `src/content/friends.ts`: Static friend links.
 - `src/content/updates.ts`: Static update entries.
+- `src/content/releases.ts`: Version records and GitHub download links.
+- `src/plugins/types.ts`: Plugin registry types and slot IDs.
+- `src/plugins/registry.ts`: Static trusted plugin definitions and selectors.
+- `src/plugins/PluginSlot.tsx`: Server-safe plugin slot component.
 - `src/lib/content.ts`: Markdown parsing and blog selectors.
 - `src/lib/search.ts`: Static search index builder.
 - `src/lib/search-filter.ts`: Client-safe search filtering helper.
@@ -57,11 +62,13 @@ Create or replace these files:
 - `src/lib/content.test.ts`: Markdown content tests.
 - `src/lib/search.test.ts`: Search index tests.
 - `src/lib/rss.test.ts`: RSS tests.
+- `src/plugins/registry.test.ts`: Plugin registry tests.
 - `src/components/ThemeSwitcher.test.tsx`: Theme switcher render test.
 - `src/components/SearchPanel.test.tsx`: Search behavior test.
 - `content/blog/hello-voyage.md`: Published sample post.
 - `content/blog/site-roadmap.md`: Published sample post.
 - `content/blog/private-draft.md`: Draft sample post for exclusion tests.
+- `docs/releases/v0.2.0.md`: Markdown release notes for the first portal release.
 
 Remove Vite-only files:
 
@@ -644,6 +651,8 @@ Expected: one commit containing Markdown fixtures, parsing utilities, and tests.
 - Create: `src/content/projects.ts`
 - Create: `src/content/friends.ts`
 - Create: `src/content/updates.ts`
+- Create: `src/content/releases.ts`
+- Create: `docs/releases/v0.2.0.md`
 - Create: `src/lib/search.test.ts`
 - Create: `src/lib/search.ts`
 - Create: `src/lib/search-filter.ts`
@@ -670,6 +679,7 @@ export const navigationItems = [
   { label: "Friends", href: "/friends" },
   { label: "Updates", href: "/updates" },
   { label: "About", href: "/about" },
+  { label: "Versions", href: "/versions" },
 ];
 
 export const themeOptions = [
@@ -799,7 +809,85 @@ export const updateItems: UpdateItem[] = [
 ];
 ```
 
-- [ ] **Step 6: Write failing search tests**
+- [ ] **Step 6: Add release records**
+
+Use `src/content/releases.ts`:
+
+```ts
+export type ReleaseItem = {
+  version: string;
+  date: string;
+  title: string;
+  notes: string[];
+  tag: string;
+  downloads: {
+    zip: string;
+    tar: string;
+  };
+};
+
+const repoArchiveBase = "https://github.com/viacold/voyage.moe/archive/refs/tags";
+
+export const releaseItems: ReleaseItem[] = [
+  {
+    version: "v0.2.0",
+    date: "2026-06-06",
+    title: "Next.js content portal foundation",
+    notes: [
+      "Adds Markdown blog content, archive pages, search, RSS, and version records.",
+      "Adds static plugin extension scaffolding for future installable features.",
+      "Keeps Markdown and typed content files inside every downloadable source version.",
+    ],
+    tag: "v0.2.0",
+    downloads: {
+      zip: `${repoArchiveBase}/v0.2.0.zip`,
+      tar: `${repoArchiveBase}/v0.2.0.tar.gz`,
+    },
+  },
+  {
+    version: "v0.1.0",
+    date: "2026-06-05",
+    title: "Initial voyage.moe landing page",
+    notes: [
+      "Created the first public voyage.moe landing page.",
+      "Published the site through GitHub-backed Vercel deployment.",
+      "Included the generated sky visual and early project documentation.",
+    ],
+    tag: "v0.1.0",
+    downloads: {
+      zip: `${repoArchiveBase}/v0.1.0.zip`,
+      tar: `${repoArchiveBase}/v0.1.0.tar.gz`,
+    },
+  },
+];
+```
+
+- [ ] **Step 7: Add Markdown release notes for the portal version**
+
+Use `docs/releases/v0.2.0.md`:
+
+```md
+# v0.2.0 Next.js Content Portal Foundation
+
+## Summary
+
+- Migrate voyage.moe from a Vite landing page to a Next.js App Router content portal.
+- Add Markdown blog content, archive, gallery, projects, friends, updates, versions, search, and RSS.
+- Add four layout-level themes and a static plugin extension scaffold.
+
+## Downloads
+
+GitHub automatically provides source ZIP and TAR.GZ archives for this tag. The archives include committed Markdown files under `content/` and `docs/`.
+
+## Verification
+
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+- Desktop and mobile browser checks
+```
+
+- [ ] **Step 8: Write failing search tests**
 
 Use `src/lib/search.test.ts`:
 
@@ -809,13 +897,14 @@ import { searchEntries } from "./search-filter";
 import { createSearchIndex } from "./search";
 
 describe("search index", () => {
-  test("indexes published blog posts, projects, and updates", async () => {
+  test("indexes published blog posts, projects, updates, and releases", async () => {
     const index = await createSearchIndex();
     const keys = index.map((entry) => `${entry.section}:${entry.slug}`);
 
     expect(keys).toContain("blog:hello-voyage");
     expect(keys).toContain("project:voyage-moe");
     expect(keys).toContain("update:nextjs-portal-plan-approved");
+    expect(keys).toContain("release:v0-2-0");
     expect(keys).not.toContain("blog:private-draft");
   });
 
@@ -825,11 +914,12 @@ describe("search index", () => {
     expect(searchEntries(index, "roadmap").map((entry) => entry.slug)).toContain("site-roadmap");
     expect(searchEntries(index, "nextjs").map((entry) => entry.section)).toContain("project");
     expect(searchEntries(index, "release").map((entry) => entry.section)).toContain("update");
+    expect(searchEntries(index, "downloadable").map((entry) => entry.section)).toContain("release");
   });
 });
 ```
 
-- [ ] **Step 7: Write failing RSS tests**
+- [ ] **Step 9: Write failing RSS tests**
 
 Use `src/lib/rss.test.ts`:
 
@@ -874,7 +964,7 @@ describe("rss", () => {
 });
 ```
 
-- [ ] **Step 8: Run the new tests to verify missing module failures**
+- [ ] **Step 10: Run the new tests to verify missing module failures**
 
 Run:
 
@@ -884,13 +974,14 @@ npm test -- src/lib/search.test.ts src/lib/rss.test.ts
 
 Expected: `FAIL` because `src/lib/search.ts` and `src/lib/rss.ts` do not exist yet.
 
-- [ ] **Step 9: Add search index logic**
+- [ ] **Step 11: Add search index logic**
 
 Use `src/lib/search.ts`:
 
 ```ts
 import { friendItems } from "@/content/friends";
 import { projectItems } from "@/content/projects";
+import { releaseItems } from "@/content/releases";
 import { updateItems } from "@/content/updates";
 import { getPublishedPosts } from "./content";
 
@@ -898,7 +989,7 @@ export type SearchEntry = {
   title: string;
   description: string;
   href: string;
-  section: "blog" | "project" | "update" | "friend";
+  section: "blog" | "project" | "update" | "friend" | "release";
   slug: string;
   date?: string;
   tags: string[];
@@ -949,6 +1040,16 @@ export async function createSearchIndex(): Promise<SearchEntry[]> {
       tags: [update.type],
       text: searchableText([update.title, update.body, update.type]),
     })),
+    ...releaseItems.map((release) => ({
+      title: release.title,
+      description: release.notes.join(" "),
+      href: "/versions",
+      section: "release" as const,
+      slug: slugify(release.version),
+      date: release.date,
+      tags: [release.version, release.tag],
+      text: searchableText([release.version, release.title, release.notes, release.tag]),
+    })),
     ...friendItems.map((friend) => ({
       title: friend.name,
       description: friend.description,
@@ -962,7 +1063,7 @@ export async function createSearchIndex(): Promise<SearchEntry[]> {
 }
 ```
 
-- [ ] **Step 10: Add client-safe search filtering logic**
+- [ ] **Step 12: Add client-safe search filtering logic**
 
 Use `src/lib/search-filter.ts`:
 
@@ -980,7 +1081,7 @@ export function searchEntries(entries: SearchEntry[], query: string) {
 }
 ```
 
-- [ ] **Step 11: Add RSS XML logic**
+- [ ] **Step 13: Add RSS XML logic**
 
 Use `src/lib/rss.ts`:
 
@@ -1028,7 +1129,7 @@ export function buildRssXml(posts: BlogPost[]) {
 }
 ```
 
-- [ ] **Step 12: Run search and RSS tests**
+- [ ] **Step 14: Run search and RSS tests**
 
 Run:
 
@@ -1038,12 +1139,12 @@ npm test -- src/lib/search.test.ts src/lib/rss.test.ts
 
 Expected: exit code `0` with four passing tests.
 
-- [ ] **Step 13: Commit static data and indexes**
+- [ ] **Step 15: Commit static data and indexes**
 
 Run:
 
 ```bash
-git add src/content src/lib/search.ts src/lib/search-filter.ts src/lib/search.test.ts src/lib/rss.ts src/lib/rss.test.ts
+git add src/content docs/releases/v0.2.0.md src/lib/search.ts src/lib/search-filter.ts src/lib/search.test.ts src/lib/rss.ts src/lib/rss.test.ts
 git commit -m "Add static content indexes"
 ```
 
@@ -1051,7 +1152,315 @@ Expected: one commit containing section data, search index logic, and RSS builde
 
 ---
 
-### Task 4: Add Theme And Search Client Components
+### Task 4: Add Plugin Registry And Extension Slots
+
+**Files:**
+- Create: `src/plugins/types.ts`
+- Create: `src/plugins/registry.ts`
+- Create: `src/plugins/PluginSlot.tsx`
+- Create: `src/plugins/registry.test.ts`
+- Modify: `src/lib/search.test.ts`
+- Modify: `src/lib/search.ts`
+
+- [ ] **Step 1: Write failing plugin registry tests**
+
+Use `src/plugins/registry.test.ts`:
+
+```ts
+import { describe, expect, test } from "vitest";
+import { getEnabledPlugins, getPluginsForSlot, pluginRegistry } from "./registry";
+
+describe("plugin registry", () => {
+  test("keeps trusted plugin definitions explicit", () => {
+    expect(pluginRegistry.map((plugin) => plugin.id)).toEqual(["release-downloads", "article-notes"]);
+  });
+
+  test("returns only enabled plugins", () => {
+    expect(getEnabledPlugins().map((plugin) => plugin.id)).toEqual(["release-downloads"]);
+  });
+
+  test("returns enabled plugins for a slot and ignores disabled plugins", () => {
+    expect(getPluginsForSlot("home.sidebar").map((plugin) => plugin.id)).toEqual(["release-downloads"]);
+    expect(getPluginsForSlot("article.afterContent")).toEqual([]);
+  });
+});
+```
+
+- [ ] **Step 2: Run the registry test to verify the missing module failure**
+
+Run:
+
+```bash
+npm test -- src/plugins/registry.test.ts
+```
+
+Expected: `FAIL` because `src/plugins/registry.ts` does not exist yet.
+
+- [ ] **Step 3: Add plugin types**
+
+Use `src/plugins/types.ts`:
+
+```ts
+export type PluginSlotId =
+  | "home.afterHero"
+  | "home.sidebar"
+  | "article.afterContent"
+  | "search.afterResults"
+  | "theme.controls";
+
+export type PluginPermission =
+  | "read:posts"
+  | "read:releases"
+  | "read:search"
+  | "theme:extend";
+
+export type PluginDefinition = {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  enabled: boolean;
+  slots: PluginSlotId[];
+  permissions: PluginPermission[];
+};
+```
+
+- [ ] **Step 4: Add the trusted static plugin registry**
+
+Use `src/plugins/registry.ts`:
+
+```ts
+import type { PluginDefinition, PluginSlotId } from "./types";
+
+export const pluginRegistry: PluginDefinition[] = [
+  {
+    id: "release-downloads",
+    name: "Release Downloads",
+    version: "0.1.0",
+    description: "Surfaces version download links in future compatible slots.",
+    enabled: true,
+    slots: ["home.sidebar"],
+    permissions: ["read:releases"],
+  },
+  {
+    id: "article-notes",
+    name: "Article Notes",
+    version: "0.1.0",
+    description: "Reserved for future article footnotes and related reading.",
+    enabled: false,
+    slots: ["article.afterContent"],
+    permissions: ["read:posts"],
+  },
+];
+
+export function getEnabledPlugins() {
+  return pluginRegistry.filter((plugin) => plugin.enabled);
+}
+
+export function getPluginsForSlot(slot: PluginSlotId) {
+  return getEnabledPlugins().filter((plugin) => plugin.slots.includes(slot));
+}
+```
+
+- [ ] **Step 5: Add the server-safe plugin slot component**
+
+Use `src/plugins/PluginSlot.tsx`:
+
+```tsx
+import type { ReactNode } from "react";
+import { getPluginsForSlot } from "./registry";
+import type { PluginSlotId } from "./types";
+
+export function PluginSlot({
+  slot,
+  children,
+}: Readonly<{
+  slot: PluginSlotId;
+  children?: ReactNode;
+}>) {
+  const plugins = getPluginsForSlot(slot);
+
+  if (!plugins.length || !children) {
+    return null;
+  }
+
+  return (
+    <div className="plugin-slot" data-plugin-slot={slot}>
+      {children}
+    </div>
+  );
+}
+```
+
+- [ ] **Step 6: Run the plugin registry test**
+
+Run:
+
+```bash
+npm test -- src/plugins/registry.test.ts
+```
+
+Expected: exit code `0` with three passing tests.
+
+- [ ] **Step 7: Extend the search test for enabled plugin metadata**
+
+Replace `src/lib/search.test.ts` with:
+
+```ts
+import { describe, expect, test } from "vitest";
+import { searchEntries } from "./search-filter";
+import { createSearchIndex } from "./search";
+
+describe("search index", () => {
+  test("indexes published blog posts, projects, updates, releases, and enabled plugins", async () => {
+    const index = await createSearchIndex();
+    const keys = index.map((entry) => `${entry.section}:${entry.slug}`);
+
+    expect(keys).toContain("blog:hello-voyage");
+    expect(keys).toContain("project:voyage-moe");
+    expect(keys).toContain("update:nextjs-portal-plan-approved");
+    expect(keys).toContain("release:v0-2-0");
+    expect(keys).toContain("plugin:release-downloads");
+    expect(keys).not.toContain("blog:private-draft");
+    expect(keys).not.toContain("plugin:article-notes");
+  });
+
+  test("filters entries by title, description, tags, section, and plugin metadata", async () => {
+    const index = await createSearchIndex();
+
+    expect(searchEntries(index, "roadmap").map((entry) => entry.slug)).toContain("site-roadmap");
+    expect(searchEntries(index, "nextjs").map((entry) => entry.section)).toContain("project");
+    expect(searchEntries(index, "release").map((entry) => entry.section)).toContain("update");
+    expect(searchEntries(index, "downloadable").map((entry) => entry.section)).toContain("release");
+    expect(searchEntries(index, "extension").map((entry) => entry.section)).toContain("plugin");
+  });
+});
+```
+
+- [ ] **Step 8: Extend the search index with enabled plugin metadata**
+
+Replace `src/lib/search.ts` with:
+
+```ts
+import { friendItems } from "@/content/friends";
+import { projectItems } from "@/content/projects";
+import { releaseItems } from "@/content/releases";
+import { updateItems } from "@/content/updates";
+import { getEnabledPlugins } from "@/plugins/registry";
+import { getPublishedPosts } from "./content";
+
+export type SearchEntry = {
+  title: string;
+  description: string;
+  href: string;
+  section: "blog" | "project" | "update" | "friend" | "release" | "plugin";
+  slug: string;
+  date?: string;
+  tags: string[];
+  text: string;
+};
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function searchableText(parts: Array<string | string[] | undefined>) {
+  return parts.flat().filter(Boolean).join(" ").toLowerCase();
+}
+
+export async function createSearchIndex(): Promise<SearchEntry[]> {
+  const posts = await getPublishedPosts();
+  const plugins = getEnabledPlugins();
+
+  return [
+    ...posts.map((post) => ({
+      title: post.title,
+      description: post.description,
+      href: `/blog/${post.slug}`,
+      section: "blog" as const,
+      slug: post.slug,
+      date: post.date,
+      tags: post.tags,
+      text: searchableText([post.title, post.description, post.tags, post.category, post.excerpt]),
+    })),
+    ...projectItems.map((project) => ({
+      title: project.title,
+      description: project.description,
+      href: project.url ?? "/projects",
+      section: "project" as const,
+      slug: slugify(project.title),
+      tags: project.tags,
+      text: searchableText([project.title, project.description, project.tags, project.status]),
+    })),
+    ...updateItems.map((update) => ({
+      title: update.title,
+      description: update.body,
+      href: "/updates",
+      section: "update" as const,
+      slug: slugify(update.title),
+      date: update.date,
+      tags: [update.type],
+      text: searchableText([update.title, update.body, update.type]),
+    })),
+    ...releaseItems.map((release) => ({
+      title: release.title,
+      description: release.notes.join(" "),
+      href: "/versions",
+      section: "release" as const,
+      slug: slugify(release.version),
+      date: release.date,
+      tags: [release.version, release.tag],
+      text: searchableText([release.version, release.title, release.notes, release.tag]),
+    })),
+    ...friendItems.map((friend) => ({
+      title: friend.name,
+      description: friend.description,
+      href: friend.url,
+      section: "friend" as const,
+      slug: slugify(friend.name),
+      tags: [],
+      text: searchableText([friend.name, friend.description, friend.url]),
+    })),
+    ...plugins.map((plugin) => ({
+      title: plugin.name,
+      description: plugin.description,
+      href: "/versions",
+      section: "plugin" as const,
+      slug: plugin.id,
+      tags: [plugin.version, ...plugin.slots, ...plugin.permissions],
+      text: searchableText([plugin.name, plugin.description, plugin.version, plugin.slots, plugin.permissions, "extension"]),
+    })),
+  ];
+}
+```
+
+- [ ] **Step 9: Run plugin and search tests**
+
+Run:
+
+```bash
+npm test -- src/plugins/registry.test.ts src/lib/search.test.ts
+```
+
+Expected: exit code `0` with five passing tests.
+
+- [ ] **Step 10: Commit plugin scaffolding**
+
+Run:
+
+```bash
+git add src/plugins src/lib/search.ts src/lib/search.test.ts
+git commit -m "Add plugin extension scaffolding"
+```
+
+Expected: one commit containing the trusted plugin registry, slot component, and search integration.
+
+---
+
+### Task 5: Add Theme And Search Client Components
 
 **Files:**
 - Create: `src/components/ThemeScript.tsx`
@@ -1362,7 +1771,7 @@ Expected: one commit containing interactive client components and tests.
 
 ---
 
-### Task 5: Add Shared Public UI Components
+### Task 6: Add Shared Public UI Components
 
 **Files:**
 - Create: `src/components/SiteHeader.tsx`
@@ -1526,7 +1935,7 @@ Expected: one commit containing shared public UI components.
 
 ---
 
-### Task 6: Add Public Routes
+### Task 7: Add Public Routes
 
 **Files:**
 - Modify: `src/app/page.tsx`
@@ -1538,6 +1947,7 @@ Expected: one commit containing shared public UI components.
 - Create: `src/app/friends/page.tsx`
 - Create: `src/app/updates/page.tsx`
 - Create: `src/app/about/page.tsx`
+- Create: `src/app/versions/page.tsx`
 - Create: `src/app/tags/[tag]/page.tsx`
 - Create: `src/app/categories/[category]/page.tsx`
 - Create: `src/app/rss.xml/route.ts`
@@ -1555,9 +1965,11 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { friendItems } from "@/content/friends";
 import { galleryItems } from "@/content/gallery";
 import { projectItems } from "@/content/projects";
+import { releaseItems } from "@/content/releases";
 import { updateItems } from "@/content/updates";
 import { getFeaturedPost, getPublishedPosts } from "@/lib/content";
 import { createSearchIndex } from "@/lib/search";
+import { PluginSlot } from "@/plugins/PluginSlot";
 
 export default async function HomePage() {
   const [featured, posts, searchEntries] = await Promise.all([
@@ -1565,6 +1977,7 @@ export default async function HomePage() {
     getPublishedPosts(),
     createSearchIndex(),
   ]);
+  const latestRelease = releaseItems[0];
 
   return (
     <>
@@ -1575,6 +1988,19 @@ export default async function HomePage() {
           <h1 id="home-title">voyage.moe</h1>
           <p>A calm content portal for writing, project notes, image fragments, updates, and future community features.</p>
         </section>
+
+        <PluginSlot slot="home.sidebar">
+          <PortalSection eyebrow="Version" title="Latest Release">
+            <ContentCard
+              eyebrow={latestRelease.version}
+              title={latestRelease.title}
+              description={latestRelease.notes[0]}
+              href="/versions"
+              date={latestRelease.date}
+              tags={[latestRelease.tag]}
+            />
+          </PortalSection>
+        </PluginSlot>
 
         {featured ? (
           <PortalSection eyebrow="Featured" title="Start Here">
@@ -1709,6 +2135,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { site } from "@/content/site";
 import { getPostBySlug, getPublishedPosts } from "@/lib/content";
 import { formatDate } from "@/lib/format";
+import { PluginSlot } from "@/plugins/PluginSlot";
 
 export async function generateStaticParams() {
   const posts = await getPublishedPosts();
@@ -1755,6 +2182,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
           </header>
           <ArticleBody html={post.html} />
+          <PluginSlot slot="article.afterContent" />
         </article>
       </main>
       <SiteFooter />
@@ -1981,7 +2409,59 @@ export default function AboutPage() {
 }
 ```
 
-- [ ] **Step 6: Add tag and category routes**
+- [ ] **Step 6: Add versions route**
+
+Use `src/app/versions/page.tsx`:
+
+```tsx
+import { SiteFooter } from "@/components/SiteFooter";
+import { SiteHeader } from "@/components/SiteHeader";
+import { releaseItems } from "@/content/releases";
+
+export const metadata = {
+  title: "Versions",
+  description: "Download previous voyage.moe source versions.",
+};
+
+export default function VersionsPage() {
+  return (
+    <>
+      <SiteHeader />
+      <main className="site-main page-stack">
+        <header className="page-heading">
+          <p className="eyebrow">Versions</p>
+          <h1>Release Downloads</h1>
+          <p>Every listed version is backed by a GitHub tag and includes Markdown content files in the source archive.</p>
+        </header>
+        <div className="release-list">
+          {releaseItems.map((release) => (
+            <article className="release-card" key={release.version}>
+              <div className="card-meta">
+                <strong>{release.version}</strong>
+                <time dateTime={release.date}>{release.date}</time>
+              </div>
+              <h2>{release.title}</h2>
+              <ul>
+                {release.notes.map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+              <div className="download-links" aria-label={`${release.version} downloads`}>
+                <a href={`https://github.com/viacold/voyage.moe/releases/tag/${release.tag}`}>GitHub Release</a>
+                <a href={release.downloads.zip}>Source ZIP</a>
+                <a href={release.downloads.tar}>Source TAR.GZ</a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </main>
+      <SiteFooter />
+    </>
+  );
+}
+```
+
+- [ ] **Step 7: Add tag and category routes**
 
 Use `src/app/tags/[tag]/page.tsx`:
 
@@ -2057,7 +2537,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 }
 ```
 
-- [ ] **Step 7: Add RSS route handler**
+- [ ] **Step 8: Add RSS route handler**
 
 Use `src/app/rss.xml/route.ts`:
 
@@ -2076,7 +2556,7 @@ export async function GET() {
 }
 ```
 
-- [ ] **Step 8: Run route type verification**
+- [ ] **Step 9: Run route type verification**
 
 Run:
 
@@ -2086,7 +2566,7 @@ npm run typecheck
 
 Expected: exit code `0`.
 
-- [ ] **Step 9: Commit public routes**
+- [ ] **Step 10: Commit public routes**
 
 Run:
 
@@ -2099,7 +2579,7 @@ Expected: one commit containing the public App Router pages.
 
 ---
 
-### Task 7: Add Final Responsive Theme CSS
+### Task 8: Add Final Responsive Theme CSS
 
 **Files:**
 - Modify: `src/app/globals.css`
@@ -2319,6 +2799,7 @@ input:focus-visible {
 .article-body,
 .content-card,
 .gallery-card,
+.release-card,
 .update-item {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -2401,12 +2882,14 @@ input:focus-visible {
 
 .content-card,
 .gallery-card,
+.release-card,
 .update-item {
   padding: 22px;
 }
 
 .content-card h3,
-.gallery-card h2 {
+.gallery-card h2,
+.release-card h2 {
   margin: 10px 0;
   font-size: 1.2rem;
   letter-spacing: 0;
@@ -2414,6 +2897,7 @@ input:focus-visible {
 
 .content-card p,
 .gallery-card p,
+.release-card li,
 .update-item p {
   margin: 0;
   color: var(--muted);
@@ -2488,6 +2972,10 @@ input:focus-visible {
   color: var(--muted);
 }
 
+.plugin-slot {
+  display: contents;
+}
+
 .article-shell {
   max-width: 860px;
 }
@@ -2521,6 +3009,7 @@ input:focus-visible {
 }
 
 .update-list,
+.release-list,
 .archive-list {
   display: grid;
   gap: 12px;
@@ -2533,6 +3022,32 @@ input:focus-visible {
   justify-content: space-between;
   padding: 14px 0;
   border-bottom: 1px solid var(--line);
+}
+
+.release-card ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 20px;
+  margin: 12px 0 0;
+}
+
+.download-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.download-links a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 12px;
+  background: var(--surface-strong);
+  color: var(--accent);
+  font-size: 0.9rem;
 }
 
 .site-footer {
@@ -2667,7 +3182,7 @@ Expected: one commit containing final public CSS.
 
 ---
 
-### Task 8: Build And Browser Verification
+### Task 9: Build And Browser Verification
 
 **Files:**
 - Modify only files required by failed checks from earlier tasks.
@@ -2728,6 +3243,7 @@ http://127.0.0.1:3000/projects
 http://127.0.0.1:3000/friends
 http://127.0.0.1:3000/updates
 http://127.0.0.1:3000/about
+http://127.0.0.1:3000/versions
 http://127.0.0.1:3000/rss.xml
 ```
 
@@ -2735,6 +3251,7 @@ Expected:
 
 - Each HTML route loads with the shared header and footer.
 - Blog detail page renders converted Markdown.
+- Versions page shows GitHub Release, Source ZIP, and Source TAR.GZ links.
 - RSS route returns XML with `application/rss+xml`.
 - Draft content does not appear.
 
@@ -2759,7 +3276,7 @@ Expected: no uncommitted project changes.
 
 ---
 
-### Task 9: Push To GitHub And Let Vercel Deploy From Git
+### Task 10: Push To GitHub, Release A Version, And Let Vercel Deploy From Git
 
 **Files:**
 - No source files change in this task unless deployment verification reveals a specific repository config issue.
@@ -2802,20 +3319,31 @@ The PR body is:
 ```md
 ## Summary
 - migrate the public site from Vite to Next.js App Router
-- add Markdown blog content, archive, gallery, projects, friends, updates, about, search, and RSS
+- add Markdown blog content, archive, gallery, projects, friends, updates, about, versions, search, and RSS
 - add four layout-level themes with responsive desktop and mobile behavior
+- add static plugin registry and extension slot scaffolding
+- add GitHub Release-backed version download records
 
 ## Verification
 - npm run typecheck
 - npm test
 - npm run build
 - browser check: desktop and mobile home page
-- browser check: blog detail and rss.xml
+- browser check: blog detail, versions, and rss.xml
 ```
 
 Expected: PR is available for review and future merge to `main`.
 
-- [ ] **Step 4: Deploy through GitHub-connected Vercel**
+- [ ] **Step 4: Merge to the production branch**
+
+Merge the PR into `main` through GitHub after review.
+
+Expected:
+
+- The merge commit lands on `main`.
+- Vercel starts a production deployment from the GitHub `main` update.
+
+- [ ] **Step 5: Verify the GitHub-connected Vercel deployment**
 
 After the PR is merged into `main`, verify the Vercel deployment created from the GitHub push.
 
@@ -2825,22 +3353,67 @@ Expected:
 - Vercel deploys from GitHub.
 - `https://voyage.moe` serves the merged `main` deployment.
 
+- [ ] **Step 6: Create and push the release tag**
+
+Run:
+
+```bash
+git fetch origin main
+git tag v0.2.0 origin/main
+git push origin v0.2.0
+```
+
+Expected:
+
+- Tag `v0.2.0` points to the verified `origin/main` release commit.
+- GitHub receives the tag.
+
+- [ ] **Step 7: Create the GitHub Release**
+
+Run:
+
+```bash
+gh release create v0.2.0 --repo viacold/voyage.moe --title "v0.2.0 Next.js content portal foundation" --notes-file docs/releases/v0.2.0.md
+```
+
+Expected:
+
+- GitHub Release `v0.2.0` exists.
+- GitHub provides source ZIP and TAR.GZ downloads for the tag.
+- Downloaded source archives include `content/blog/*.md` and `docs/releases/v0.2.0.md`.
+
+- [ ] **Step 8: Verify the live versions page after release**
+
+Open:
+
+```text
+https://voyage.moe/versions
+```
+
+Expected:
+
+- `v0.2.0` appears on the page.
+- The GitHub Release link opens the `v0.2.0` release.
+- Source ZIP and Source TAR.GZ links download GitHub source archives.
+
 ---
 
 ## Self-Review Checklist
 
 - Spec coverage:
-  - Responsive mobile and desktop behavior is covered by Tasks 7 and 8.
-  - Blog index, detail, archive, RSS, and Markdown content are covered by Tasks 2, 3, and 6.
-  - Gallery, projects, friends, updates, and about sections are covered by Tasks 3 and 6.
-  - Four layout-level themes are covered by Tasks 4 and 7.
-  - Search is covered by Tasks 3, 4, 6, and 8.
-  - GitHub-first deployment is covered by Task 9.
+  - Responsive mobile and desktop behavior is covered by Tasks 8 and 9.
+  - Blog index, detail, archive, RSS, and Markdown content are covered by Tasks 2, 3, and 7.
+  - Gallery, projects, friends, updates, versions, and about sections are covered by Tasks 3 and 7.
+  - Four layout-level themes are covered by Tasks 5 and 8.
+  - Search is covered by Tasks 3, 4, 5, 7, and 9.
+  - Plugin scaffolding is covered by Task 4.
+  - GitHub-first deployment and versioned releases are covered by Task 10.
   - Admin, login, registration, database, comments, uploads, and profiles are not included in Phase 1 tasks.
 - Type consistency:
   - `ThemeId` comes from `src/content/site.ts` and is used by theme components.
   - `BlogPost` comes from `src/lib/content.ts` and is used by RSS and routes.
   - `SearchEntry` comes from `src/lib/search.ts` and is used by `SearchPanel`.
+  - `PluginSlotId` comes from `src/plugins/types.ts` and is used by plugin selectors and slots.
 - Verification sequence:
   - Data modules are tested before route wiring.
   - Client interactions are tested before route wiring.
