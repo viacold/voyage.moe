@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
+import { TopicBrowser } from "@/components/TopicBrowser";
 import { getAllCategories, getAllTags, getPublishedPosts } from "@/lib/content";
 import { countItems } from "@/lib/topic";
-import { TopicBrowser } from "@/components/TopicBrowser";
 
 export const metadata = {
   title: "Archive",
@@ -21,32 +19,23 @@ export default async function ArchivePage() {
 
   return (
     <>
-      <SiteHeader />
-      <main className="site-main page-stack archive-layout">
-        <header className="page-heading">
-          <p className="eyebrow">Archive</p>
-          <h1>All Entries</h1>
-          <p>A denser index for browsing every published note.</p>
-        </header>
+      <header className="page-heading">
+        <p className="eyebrow">Archive</p>
+        <h1>All Entries</h1>
+        <p>A denser index for browsing every published note.</p>
+      </header>
 
-        <TopicBrowser
-          categories={categories}
-          categoryCounts={categoryCounts}
-          tags={tags}
-          tagCounts={tagCounts}
-        />
+      <TopicBrowser categories={categories} categoryCounts={categoryCounts} tags={tags} tagCounts={tagCounts} />
 
-        <ol className="archive-list">
-          {posts.map((post) => (
-            <li key={post.slug}>
-              <time dateTime={post.date}>{post.date}</time>
-              <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-              <span>{post.category}</span>
-            </li>
-          ))}
-        </ol>
-      </main>
-      <SiteFooter />
+      <ol className="archive-list archive-feed">
+        {posts.map((post) => (
+          <li key={post.slug}>
+            <time dateTime={post.date}>{post.date}</time>
+            <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+            <span>{post.category}</span>
+          </li>
+        ))}
+      </ol>
     </>
   );
 }

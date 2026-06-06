@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleBody } from "@/components/ArticleBody";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { site } from "@/content/site";
 import { getPostBySlug, getPublishedPosts } from "@/lib/content";
 import { formatDate } from "@/lib/format";
@@ -41,24 +39,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   return (
-    <>
-      <SiteHeader />
-      <main className="site-main article-shell">
-        <article>
-          <header className="article-header">
-            <p className="eyebrow">{post.category}</p>
-            <h1>{post.title}</h1>
-            <p>{post.description}</p>
-            <div className="article-meta">
-              <time dateTime={post.date}>{formatDate(post.date)}</time>
-              <span>{post.readingMinutes} min read</span>
-            </div>
-          </header>
-          <ArticleBody html={post.html} />
-          <PluginSlot slot="article.afterContent" />
-        </article>
-      </main>
-      <SiteFooter />
-    </>
+    <article className="article-shell">
+      <header className="article-header">
+        <p className="eyebrow">{post.category}</p>
+        <h1>{post.title}</h1>
+        <p>{post.description}</p>
+        <div className="article-meta">
+          <time dateTime={post.date}>{formatDate(post.date)}</time>
+          <span>{post.readingMinutes} min read</span>
+        </div>
+      </header>
+      <ArticleBody html={post.html} />
+      <PluginSlot slot="article.afterContent" />
+    </article>
   );
 }

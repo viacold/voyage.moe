@@ -1,7 +1,5 @@
 import { ContentCard } from "@/components/ContentCard";
 import { TopicBrowser } from "@/components/TopicBrowser";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { getAllCategories, getAllTags, getPostsByTag, getPublishedPosts } from "@/lib/content";
 import { countItems } from "@/lib/topic";
 
@@ -25,34 +23,30 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
 
   return (
     <>
-      <SiteHeader />
-      <main className="site-main page-stack">
-        <header className="page-heading">
-          <p className="eyebrow">Tag</p>
-          <h1>{tag}</h1>
-          <p>All published notes with this tag, plus nearby topics for the next click.</p>
-        </header>
-        <TopicBrowser
-          categories={categories}
-          categoryCounts={categoryCounts}
-          tags={tags}
-          tagCounts={tagCounts}
-          activeTag={tag}
-        />
-        <div className="card-grid">
-          {posts.map((post) => (
-            <ContentCard
-              title={post.title}
-              description={post.description}
-              href={`/blog/${post.slug}`}
-              date={post.date}
-              tags={post.tags}
-              key={post.slug}
-            />
-          ))}
-        </div>
-      </main>
-      <SiteFooter />
+      <header className="page-heading">
+        <p className="eyebrow">Tag</p>
+        <h1>{tag}</h1>
+        <p>All published notes with this tag, plus nearby topics for the next click.</p>
+      </header>
+      <TopicBrowser
+        categories={categories}
+        categoryCounts={categoryCounts}
+        tags={tags}
+        tagCounts={tagCounts}
+        activeTag={tag}
+      />
+      <div className="post-feed">
+        {posts.map((post) => (
+          <ContentCard
+            title={post.title}
+            description={post.description}
+            href={`/blog/${post.slug}`}
+            date={post.date}
+            tags={post.tags}
+            key={post.slug}
+          />
+        ))}
+      </div>
     </>
   );
 }

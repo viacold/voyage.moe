@@ -1,7 +1,5 @@
 import { ContentCard } from "@/components/ContentCard";
 import { TopicBrowser } from "@/components/TopicBrowser";
-import { SiteFooter } from "@/components/SiteFooter";
-import { SiteHeader } from "@/components/SiteHeader";
 import { getAllCategories, getAllTags, getPublishedPosts, getPostsByCategory } from "@/lib/content";
 import { countItems } from "@/lib/topic";
 
@@ -25,34 +23,30 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
   return (
     <>
-      <SiteHeader />
-      <main className="site-main page-stack">
-        <header className="page-heading">
-          <p className="eyebrow">Category</p>
-          <h1>{category}</h1>
-          <p>All published notes in this category, with the wider topic map above.</p>
-        </header>
-        <TopicBrowser
-          categories={categories}
-          categoryCounts={categoryCounts}
-          tags={tags}
-          tagCounts={tagCounts}
-          activeCategory={category}
-        />
-        <div className="card-grid">
-          {posts.map((post) => (
-            <ContentCard
-              title={post.title}
-              description={post.description}
-              href={`/blog/${post.slug}`}
-              date={post.date}
-              tags={post.tags}
-              key={post.slug}
-            />
-          ))}
-        </div>
-      </main>
-      <SiteFooter />
+      <header className="page-heading">
+        <p className="eyebrow">Category</p>
+        <h1>{category}</h1>
+        <p>All published notes in this category, with the wider topic map above.</p>
+      </header>
+      <TopicBrowser
+        categories={categories}
+        categoryCounts={categoryCounts}
+        tags={tags}
+        tagCounts={tagCounts}
+        activeCategory={category}
+      />
+      <div className="post-feed">
+        {posts.map((post) => (
+          <ContentCard
+            title={post.title}
+            description={post.description}
+            href={`/blog/${post.slug}`}
+            date={post.date}
+            tags={post.tags}
+            key={post.slug}
+          />
+        ))}
+      </div>
     </>
   );
 }

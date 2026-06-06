@@ -7,9 +7,10 @@ import { themeOptions } from "@/content/site";
 type ThemeSwitcherProps = {
   theme: ThemeId;
   onThemeChange: (theme: ThemeId) => void;
+  compact?: boolean;
 };
 
-export function ThemeSwitcher({ theme, onThemeChange }: ThemeSwitcherProps) {
+export function ThemeSwitcher({ theme, onThemeChange, compact = false }: ThemeSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -45,12 +46,12 @@ export function ThemeSwitcher({ theme, onThemeChange }: ThemeSwitcherProps) {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label="Choose theme"
-        className="theme-trigger"
+        className={`theme-trigger${compact ? " theme-trigger-compact" : ""}`}
         onClick={() => setIsOpen((open) => !open)}
         type="button"
       >
         <span className={`theme-swatch theme-swatch-${theme}`} aria-hidden="true" />
-        <span className="theme-trigger-label">Theme</span>
+        {compact ? null : <span className="theme-trigger-label">Theme</span>}
       </button>
       {isOpen ? (
         <div className="theme-panel" role="dialog" aria-label="Theme options">

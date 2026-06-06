@@ -11,7 +11,7 @@ vi.mock("./ThemeProvider", () => ({
 }));
 
 describe("site chrome", () => {
-  test("keeps only primary links in the header and moves secondary links to the footer", () => {
+  test("keeps the header minimal and moves navigation into the fixed footer dock", () => {
     render(
       <>
         <SiteHeader />
@@ -19,19 +19,17 @@ describe("site chrome", () => {
       </>,
     );
 
-    const headerNav = screen.getByRole("navigation", { name: /primary navigation/i });
-    const footerNav = screen.getByRole("navigation", { name: /footer links/i });
+    const headerNav = screen.queryByRole("navigation", { name: /primary navigation/i });
+    const footerMainNav = screen.getByRole("navigation", { name: /main navigation/i });
 
-    expect(within(headerNav).getByRole("link", { name: "Blog" })).toBeInTheDocument();
-    expect(within(headerNav).getByRole("link", { name: "Projects" })).toBeInTheDocument();
-    expect(within(headerNav).getByRole("link", { name: "Gallery" })).toBeInTheDocument();
-    expect(within(headerNav).getByRole("link", { name: "About" })).toBeInTheDocument();
-    expect(within(headerNav).queryByRole("link", { name: "Updates" })).not.toBeInTheDocument();
-    expect(within(headerNav).queryByRole("link", { name: "Friends" })).not.toBeInTheDocument();
+    expect(headerNav).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /choose theme/i })).toBeInTheDocument();
 
-    expect(within(footerNav).getByRole("link", { name: "Archive" })).toBeInTheDocument();
-    expect(within(footerNav).getByRole("link", { name: "Friends" })).toBeInTheDocument();
-    expect(within(footerNav).getByRole("link", { name: "Updates" })).toBeInTheDocument();
-    expect(within(footerNav).getByRole("link", { name: "RSS" })).toBeInTheDocument();
+    expect(within(footerMainNav).getByRole("link", { name: "首页" })).toBeInTheDocument();
+    expect(within(footerMainNav).getByRole("link", { name: "文章" })).toBeInTheDocument();
+    expect(within(footerMainNav).getByRole("link", { name: "相册" })).toBeInTheDocument();
+    expect(within(footerMainNav).getByRole("link", { name: "留言" })).toBeInTheDocument();
+    expect(within(footerMainNav).getByRole("link", { name: "个人主页" })).toBeInTheDocument();
+    expect(within(footerMainNav).queryByRole("link", { name: "RSS" })).not.toBeInTheDocument();
   });
 });

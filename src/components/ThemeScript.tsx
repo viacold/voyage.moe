@@ -3,9 +3,15 @@ export function ThemeScript() {
     try {
       var stored = localStorage.getItem("voyage-theme");
       var preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "night" : "clear";
-      document.documentElement.dataset.theme = stored || preferred;
+      var theme = stored || preferred;
+      document.documentElement.dataset.theme = theme;
+      document.body.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
     } catch (error) {
       document.documentElement.dataset.theme = "clear";
+      if (document.body) {
+        document.body.dataset.theme = "clear";
+      }
     }
   `;
 
