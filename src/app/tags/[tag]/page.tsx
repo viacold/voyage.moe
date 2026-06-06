@@ -1,7 +1,9 @@
 import { ContentCard } from "@/components/ContentCard";
+import { TopicBrowser } from "@/components/TopicBrowser";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getAllTags, getPostsByTag } from "@/lib/content";
+import { getAllCategories, getAllTags, getPostsByTag, getPublishedPosts } from "@/lib/content";
+import { countItems } from "@/lib/topic";
 
 export const dynamicParams = false;
 
@@ -12,7 +14,14 @@ export async function generateStaticParams() {
 
 export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag } = await params;
-  const posts = await getPostsByTag(tag);
+  const [posts, categories, tags] = await Promise.all([
+    getPostsByTag(tag),
+    getAllCategories(),
+    getAllTags(),
+  ]);
+  const allPosts = await getPublishedPosts();
+  const categoryCounts = countItems(allPosts.map((post) => post.category));
+  const tagCounts = countItems(allPosts.flatMap((post) => post.tags));
 
   return (
     <>
@@ -21,7 +30,15 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
         <header className="page-heading">
           <p className="eyebrow">Tag</p>
           <h1>{tag}</h1>
+          <p>All published notes with this tag, plus nearby topics for the next click.</p>
         </header>
+        <TopicBrowser
+          categories={categories}
+          categoryCounts={categoryCounts}
+          tags={tags}
+          tagCounts={tagCounts}
+          activeTag={tag}
+        />
         <div className="card-grid">
           {posts.map((post) => (
             <ContentCard

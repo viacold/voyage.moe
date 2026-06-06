@@ -368,6 +368,16 @@ input:focus-visible {
   font-size: 0.82rem;
 }
 
+.topic-pill[data-active="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.topic-pill[data-active="true"] span:last-child {
+  color: var(--accent);
+}
+
 .content-card,
 .gallery-card,
 .release-card,

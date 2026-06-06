@@ -1,15 +1,9 @@
 import Link from "next/link";
-import { PortalSection } from "@/components/PortalSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getAllCategories, getAllTags, getPublishedPosts } from "@/lib/content";
-
-function countItems(items: string[]) {
-  return items.reduce<Record<string, number>>((counts, item) => {
-    counts[item] = (counts[item] ?? 0) + 1;
-    return counts;
-  }, {});
-}
+import { countItems } from "@/lib/topic";
+import { TopicBrowser } from "@/components/TopicBrowser";
 
 export const metadata = {
   title: "Archive",
@@ -35,37 +29,12 @@ export default async function ArchivePage() {
           <p>A denser index for browsing every published note.</p>
         </header>
 
-        <PortalSection
-          eyebrow="Browse"
-          title="Filter By Topic"
-          description="Use categories and tags to narrow the archive without leaving the page."
-        >
-          <div className="topic-groups">
-            <section className="topic-group" aria-labelledby="archive-category-links-title">
-              <h3 id="archive-category-links-title">Categories</h3>
-              <div className="topic-list">
-                {categories.map((category) => (
-                  <Link className="topic-pill" href={`/categories/${category}`} key={category}>
-                    <span>{category}</span>
-                    <span>{categoryCounts[category]}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            <section className="topic-group" aria-labelledby="archive-tag-links-title">
-              <h3 id="archive-tag-links-title">Tags</h3>
-              <div className="topic-list">
-                {tags.map((tag) => (
-                  <Link className="topic-pill" href={`/tags/${tag}`} key={tag}>
-                    <span>{tag}</span>
-                    <span>{tagCounts[tag]}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          </div>
-        </PortalSection>
+        <TopicBrowser
+          categories={categories}
+          categoryCounts={categoryCounts}
+          tags={tags}
+          tagCounts={tagCounts}
+        />
 
         <ol className="archive-list">
           {posts.map((post) => (
