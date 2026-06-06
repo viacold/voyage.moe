@@ -5,15 +5,17 @@ export const site = {
   email: "hello@voyage.moe",
 };
 
-export const navigationItems = [
+export const primaryNavigationItems = [
   { label: "Blog", href: "/blog" },
-  { label: "Archive", href: "/archive" },
-  { label: "Gallery", href: "/gallery" },
   { label: "Projects", href: "/projects" },
+  { label: "Gallery", href: "/gallery" },
+  { label: "About", href: "/about" },
+];
+
+export const secondaryNavigationItems = [
+  { label: "Archive", href: "/archive" },
   { label: "Friends", href: "/friends" },
   { label: "Updates", href: "/updates" },
-  { label: "About", href: "/about" },
-  { label: "Versions", href: "/versions" },
 ];
 
 export const themeOptions = [

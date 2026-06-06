@@ -1,13 +1,31 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, test } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 
+afterEach(() => {
+  cleanup();
+});
+
 describe("ThemeSwitcher", () => {
-  test("renders the four theme choices", () => {
+  test("opens the theme panel from a compact trigger", () => {
     render(<ThemeSwitcher theme="clear" onThemeChange={() => undefined} />);
 
-    for (const name of ["Clear", "Voyage", "Night", "Archive"]) {
-      expect(screen.getByRole("button", { name: new RegExp(name, "i") })).toBeInTheDocument();
-    }
+    expect(screen.queryByRole("button", { name: /voyage/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /choose theme/i }));
+
+    expect(screen.getByRole("button", { name: /voyage/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /archive/i })).toBeInTheDocument();
+  });
+
+  test("applies the chosen theme and closes the panel", () => {
+    const onThemeChange = vi.fn();
+    render(<ThemeSwitcher theme="clear" onThemeChange={onThemeChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /choose theme/i }));
+    fireEvent.click(screen.getByRole("button", { name: /night/i }));
+
+    expect(onThemeChange).toHaveBeenCalledWith("night");
+    expect(screen.queryByRole("button", { name: /archive/i })).not.toBeInTheDocument();
   });
 });

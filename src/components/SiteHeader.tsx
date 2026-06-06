@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { navigationItems, site } from "@/content/site";
+import { primaryNavigationItems, site } from "@/content/site";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { useTheme } from "./ThemeProvider";
 
@@ -14,7 +14,7 @@ export function SiteHeader() {
         {site.name}
       </Link>
       <nav className="site-nav" aria-label="Primary navigation">
-        {navigationItems.map((item) => (
+        {primaryNavigationItems.map((item) => (
           <Link href={item.href} key={item.href}>
             {item.label}
           </Link>
