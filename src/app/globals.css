@@ -329,6 +329,45 @@ input:focus-visible {
   gap: 16px;
 }
 
+.topic-groups {
+  display: grid;
+  gap: 18px;
+}
+
+.topic-group {
+  display: grid;
+  gap: 10px;
+}
+
+.topic-group h3 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.topic-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.topic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-strong);
+  color: var(--text);
+}
+
+.topic-pill span:last-child {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .content-card,
 .gallery-card,
 .release-card,
