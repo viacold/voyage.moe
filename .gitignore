@@ -5,5 +5,8 @@ dist/
 .next/
 .next-dev*.log
 *.tsbuildinfo
+data/voyage.db
+data/voyage.db-shm
+data/voyage.db-wal
 
 .vercel

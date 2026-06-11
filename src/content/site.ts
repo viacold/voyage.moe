@@ -5,17 +5,6 @@ export const site = {
   email: "hello@voyage.moe",
 };
 
-export const navigationItems = [
-  { label: "Blog", href: "/blog" },
-  { label: "Archive", href: "/archive" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Projects", href: "/projects" },
-  { label: "Friends", href: "/friends" },
-  { label: "Updates", href: "/updates" },
-  { label: "About", href: "/about" },
-  { label: "Versions", href: "/versions" },
-];
-
 export const themeOptions = [
   { id: "clear", label: "Clear", description: "spacious editorial clarity" },
   { id: "voyage", label: "Voyage", description: "soft sky and travel mood" },

@@ -1,0 +1,13 @@
+{
+  "accounts": [
+    {
+      "id": "acct_80f05ed6-f538-4690-91b4-6c2705279b09",
+      "name": "voyage",
+      "email": "admin@voyage.moe",
+      "passwordHash": "scrypt$baf9e8a6-5c2b-40ad-ac44-ff15e80153e8$7e92387131c3f209425c56c308c2d4b120ab35028860befae2744fb72061a8dcdd96dc2ec988136a461637e302436d3fff4d29805fb07172f53eccca41d98654",
+      "role": "admin",
+      "createdAt": "2026-06-07T07:57:16.902Z",
+      "updatedAt": "2026-06-07T07:57:16.902Z"
+    }
+  ]
+}

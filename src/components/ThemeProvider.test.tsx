@@ -54,4 +54,32 @@ describe("ThemeProvider", () => {
     await waitFor(() => expect(screen.getByTestId("theme-value")).toHaveTextContent("archive"));
     expect(errorSpy.mock.calls.flat().join("\n")).not.toContain("hydration");
   });
+
+  test("restores a stored theme from localStorage when the document theme is not preset", async () => {
+    const documentRef = document;
+    vi.stubGlobal("document", undefined);
+    const serverHtml = renderToString(
+      <ThemeProvider>
+        <ThemeProbe />
+      </ThemeProvider>,
+    );
+    vi.stubGlobal("document", documentRef);
+
+    localStorage.setItem("voyage-theme", "night");
+    document.documentElement.dataset.theme = "";
+    const container = document.createElement("div");
+    container.innerHTML = serverHtml;
+    document.body.appendChild(container);
+
+    await act(async () => {
+      root = hydrateRoot(
+        container,
+        <ThemeProvider>
+          <ThemeProbe />
+        </ThemeProvider>,
+      );
+    });
+
+    await waitFor(() => expect(screen.getByTestId("theme-value")).toHaveTextContent("night"));
+  });
 });
