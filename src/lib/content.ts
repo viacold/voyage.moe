@@ -4,8 +4,9 @@ import matter from "gray-matter";
 import { remark } from "remark";
 import remarkHtml from "remark-html";
 import { byNewestDate, uniqueSorted } from "./format";
+import { getMetaValue, getVoyageDatabase, setMetaValue } from "./voyage-db";
 
-const blogDirectory = path.join(process.cwd(), "content", "blog");
+let blogDirectory = path.join(process.cwd(), "content", "blog");
 
 export type BlogPost = {
   slug: string;
@@ -25,6 +26,10 @@ export type BlogPost = {
   excerpt: string;
   readingMinutes: number;
 };
+
+export function setBlogDirectoryForTest(directory: string) {
+  blogDirectory = directory;
+}
 
 function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
@@ -60,10 +65,49 @@ async function renderMarkdown(content: string) {
   return processed.toString();
 }
 
-async function readPostFile(filename: string): Promise<BlogPost> {
+function tagsToJson(tags: string[]) {
+  return JSON.stringify(tags);
+}
+
+function parseTags(value: unknown) {
+  if (typeof value !== "string") {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function rowToPost(row: Record<string, unknown>): BlogPost {
+  return {
+    slug: String(row.slug),
+    title: String(row.title),
+    description: String(row.description),
+    date: String(row.date),
+    updated: typeof row.updated === "string" && row.updated ? row.updated : undefined,
+    authorName: typeof row.authorName === "string" && row.authorName ? row.authorName : undefined,
+    authorEmail: typeof row.authorEmail === "string" && row.authorEmail ? row.authorEmail : undefined,
+    tags: parseTags(row.tagsJson),
+    category: String(row.category),
+    cover: typeof row.cover === "string" && row.cover ? row.cover : undefined,
+    featured: row.featured === 1,
+    draft: row.draft === 1,
+    content: String(row.content),
+    html: String(row.html),
+    excerpt: String(row.excerpt),
+    readingMinutes: Number(row.readingMinutes) || 1,
+  };
+}
+
+async function readMarkdownPost(filename: string): Promise<BlogPost> {
   const slug = filename.replace(/\.mdx?$/, "");
   const raw = await fs.readFile(path.join(blogDirectory, filename), "utf8");
   const parsed = matter(raw);
+  const content = parsed.content;
 
   return {
     slug,
@@ -78,33 +122,126 @@ async function readPostFile(filename: string): Promise<BlogPost> {
     cover: asString(parsed.data.cover) || undefined,
     featured: asBoolean(parsed.data.featured),
     draft: asBoolean(parsed.data.draft),
-    content: parsed.content,
-    html: await renderMarkdown(parsed.content),
-    excerpt: createExcerpt(parsed.content),
-    readingMinutes: estimateReadingMinutes(parsed.content),
+    content,
+    html: await renderMarkdown(content),
+    excerpt: createExcerpt(content),
+    readingMinutes: estimateReadingMinutes(content),
   };
 }
 
+async function seedPostsFromMarkdownIfNeeded() {
+  if (getMetaValue("posts_seeded") === "true") {
+    return;
+  }
+
+  const db = getVoyageDatabase();
+  const count = db.prepare("SELECT COUNT(*) AS count FROM posts").get() as { count?: number } | undefined;
+
+  if ((count?.count ?? 0) === 0) {
+    const filenames = await fs.readdir(blogDirectory);
+    const markdownFiles = filenames.filter((filename) => /\.mdx?$/.test(filename));
+    const posts = await Promise.all(markdownFiles.map(readMarkdownPost));
+
+    const insert = db.prepare(`
+      INSERT OR REPLACE INTO posts (
+        slug,
+        title,
+        description,
+        date,
+        updated,
+        authorName,
+        authorEmail,
+        tagsJson,
+        category,
+        cover,
+        featured,
+        draft,
+        content,
+        html,
+        excerpt,
+        readingMinutes,
+        createdAt,
+        updatedAt
+      ) VALUES (
+        @slug,
+        @title,
+        @description,
+        @date,
+        @updated,
+        @authorName,
+        @authorEmail,
+        @tagsJson,
+        @category,
+        @cover,
+        @featured,
+        @draft,
+        @content,
+        @html,
+        @excerpt,
+        @readingMinutes,
+        @createdAt,
+        @updatedAt
+      )
+    `);
+
+    const transaction = db.transaction((seedPosts: BlogPost[]) => {
+      for (const post of seedPosts) {
+        insert.run({
+          ...post,
+          tagsJson: tagsToJson(post.tags),
+          featured: post.featured ? 1 : 0,
+          draft: post.draft ? 1 : 0,
+          createdAt: post.date,
+          updatedAt: post.updated ?? post.date,
+        });
+      }
+    });
+
+    transaction(posts);
+  }
+
+  setMetaValue("posts_seeded", "true");
+}
+
+function readPostsQuery(includeDrafts: boolean) {
+  const rows = getVoyageDatabase()
+    .prepare(
+      `
+        SELECT *
+        FROM posts
+        ${includeDrafts ? "" : "WHERE draft = 0"}
+        ORDER BY date DESC, slug DESC
+      `,
+    )
+    .all() as Record<string, unknown>[];
+
+  return rows.map(rowToPost);
+}
+
 export async function getAllPosts() {
-  const filenames = await fs.readdir(blogDirectory);
-  const markdownFiles = filenames.filter((filename) => /\.mdx?$/.test(filename));
-  const posts = await Promise.all(markdownFiles.map(readPostFile));
-  return byNewestDate(posts);
+  await seedPostsFromMarkdownIfNeeded();
+  return readPostsQuery(true);
 }
 
 export async function getPublishedPosts() {
-  const posts = await getAllPosts();
-  return posts.filter((post) => !post.draft);
+  await seedPostsFromMarkdownIfNeeded();
+  return readPostsQuery(false);
 }
 
 export async function getPostBySlug(slug: string) {
-  const posts = await getPublishedPosts();
-  return posts.find((post) => post.slug === slug) ?? null;
+  await seedPostsFromMarkdownIfNeeded();
+  const row = getVoyageDatabase()
+    .prepare("SELECT * FROM posts WHERE slug = ? AND draft = 0")
+    .get(slug) as Record<string, unknown> | undefined;
+
+  return row ? rowToPost(row) : null;
 }
 
 export async function getPostBySlugIncludingDrafts(slug: string) {
-  const posts = await getAllPosts();
-  return posts.find((post) => post.slug === slug) ?? null;
+  await seedPostsFromMarkdownIfNeeded();
+  const row = getVoyageDatabase().prepare("SELECT * FROM posts WHERE slug = ?").get(slug) as Record<string, unknown> | undefined;
+
+  return row ? rowToPost(row) : null;
 }
 
 export async function getFeaturedPost() {
@@ -130,4 +267,8 @@ export async function getPostsByTag(tag: string) {
 export async function getPostsByCategory(category: string) {
   const posts = await getPublishedPosts();
   return posts.filter((post) => post.category === category);
+}
+
+export async function getPostRowsForTesting() {
+  return byNewestDate(await getAllPosts());
 }

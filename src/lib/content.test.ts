@@ -1,4 +1,7 @@
-import { describe, expect, test } from "vitest";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   getAllCategories,
   getAllTags,
@@ -6,8 +9,21 @@ import {
   getPostBySlug,
   getPublishedPosts,
 } from "./content";
+import { setVoyageDbPathForTest } from "./voyage-db";
+
+const tempRoot = path.join(os.tmpdir(), `voyage-content-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+const tempDbPath = path.join(tempRoot, "voyage.db");
+
+afterEach(async () => {
+  setVoyageDbPathForTest(null);
+  await fs.rm(tempRoot, { recursive: true, force: true });
+});
 
 describe("blog content", () => {
+  beforeEach(() => {
+    setVoyageDbPathForTest(tempDbPath);
+  });
+
   test("returns published posts newest first and excludes drafts", async () => {
     const posts = await getPublishedPosts();
 

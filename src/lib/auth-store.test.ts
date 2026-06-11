@@ -10,7 +10,7 @@ import {
 } from "./auth-store";
 import { signSessionToken, verifySessionToken } from "./session-token";
 
-const tempDbPath = path.join(os.tmpdir(), `voyage-auth-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
+const tempDbPath = path.join(os.tmpdir(), `voyage-auth-${Date.now()}-${Math.random().toString(16).slice(2)}.db`);
 
 beforeEach(async () => {
   setAuthDbPathForTest(tempDbPath);
@@ -54,7 +54,7 @@ describe("auth store", () => {
         email: "member@voyage.moe",
         password: "password123",
       }),
-    ).rejects.toThrow("这个邮箱已经注册过了。");
+    ).rejects.toThrow("That email is already registered.");
   });
 
   test("signs in with a valid password and rejects invalid credentials", async () => {
@@ -76,7 +76,7 @@ describe("auth store", () => {
         email: "reader@voyage.moe",
         password: "wrong-password",
       }),
-    ).rejects.toThrow("邮箱或密码不正确。");
+    ).rejects.toThrow("Email or password is incorrect.");
   });
 
   test("signs and verifies session tokens", async () => {

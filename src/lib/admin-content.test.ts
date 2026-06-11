@@ -13,16 +13,20 @@ import {
   saveBlogPost,
   setBlogDirectoryForTest,
 } from "./admin-content";
+import { setVoyageDbPathForTest } from "./voyage-db";
 
 const tempRoot = path.join(os.tmpdir(), `voyage-admin-content-${Date.now()}-${Math.random().toString(16).slice(2)}`);
 const tempBlogDirectory = path.join(tempRoot, "blog");
+const tempDbPath = path.join(tempRoot, "voyage.db");
 
 beforeEach(async () => {
   setBlogDirectoryForTest(tempBlogDirectory);
+  setVoyageDbPathForTest(tempDbPath);
   await fs.mkdir(tempBlogDirectory, { recursive: true });
 });
 
 afterEach(async () => {
+  setVoyageDbPathForTest(null);
   await fs.rm(tempRoot, { recursive: true, force: true });
 });
 
