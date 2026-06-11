@@ -13,6 +13,8 @@ export type BlogPost = {
   description: string;
   date: string;
   updated?: string;
+  authorName?: string;
+  authorEmail?: string;
   tags: string[];
   category: string;
   cover?: string;
@@ -69,6 +71,8 @@ async function readPostFile(filename: string): Promise<BlogPost> {
     description: asString(parsed.data.description),
     date: asString(parsed.data.date),
     updated: asString(parsed.data.updated) || undefined,
+    authorName: asString(parsed.data.authorName) || undefined,
+    authorEmail: asString(parsed.data.authorEmail) || undefined,
     tags: asStringArray(parsed.data.tags),
     category: asString(parsed.data.category, "notes"),
     cover: asString(parsed.data.cover) || undefined,
@@ -95,6 +99,11 @@ export async function getPublishedPosts() {
 
 export async function getPostBySlug(slug: string) {
   const posts = await getPublishedPosts();
+  return posts.find((post) => post.slug === slug) ?? null;
+}
+
+export async function getPostBySlugIncludingDrafts(slug: string) {
+  const posts = await getAllPosts();
   return posts.find((post) => post.slug === slug) ?? null;
 }
 

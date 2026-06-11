@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AuthProvider } from "@/components/AuthProvider";
 import { AppReady } from "@/components/AppReady";
 import { RouteLoadingOverlay } from "@/components/RouteLoadingOverlay";
 import { RouteTransitionProvider } from "@/components/RouteTransitionProvider";
@@ -27,13 +28,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <RouteTransitionProvider>
           <ThemeProvider>
-            <AppReady />
-            <SiteHeader />
-            <main className="site-main">
-              {children}
-              <RouteLoadingOverlay />
-            </main>
-            <SiteFooter />
+            <AuthProvider>
+              <AppReady />
+              <SiteHeader />
+              <main className="site-main">
+                {children}
+                <RouteLoadingOverlay />
+              </main>
+              <SiteFooter />
+            </AuthProvider>
           </ThemeProvider>
         </RouteTransitionProvider>
       </body>

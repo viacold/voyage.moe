@@ -1,0 +1,16 @@
+---
+title: "Site Roadmap"
+description: "A simple roadmap for the long-term shape of voyage.moe."
+date: "2026-06-06"
+updated: "2026-06-06"
+tags:
+  - roadmap
+  - build
+category: "projects"
+featured: false
+draft: false
+---
+
+Phase 1 focuses on public content: blog posts, archives, gallery entries, project notes, friend links, search, and RSS.
+
+Future phases can add management tools, accounts, comments, subscriptions, and smarter discovery.

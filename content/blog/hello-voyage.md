@@ -6,6 +6,9 @@ tags:
   - intro
   - voyage
 category: "notes"
+authorName: "voyage"
+authorEmail: "admin@voyage.moe"
+cover: "https://markdown.com.cn/images/qrcode_for_gh_82cf87d482f0_258.jpg"
 featured: true
 draft: false
 ---

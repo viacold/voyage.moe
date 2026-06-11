@@ -34,6 +34,7 @@ export default async function BlogPage() {
             href={`/blog/${post.slug}`}
             date={post.date}
             tags={post.tags}
+            cover={post.cover}
             key={post.slug}
           />
         ))}

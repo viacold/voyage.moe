@@ -12,7 +12,7 @@ describe("ThemeSwitcher", () => {
 
     expect(screen.queryByRole("button", { name: /voyage/i })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /choose theme/i }));
+    fireEvent.click(screen.getByRole("button", { name: /选择主题/i }));
 
     expect(screen.getByRole("button", { name: /voyage/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /archive/i })).toBeInTheDocument();
@@ -22,7 +22,7 @@ describe("ThemeSwitcher", () => {
     const onThemeChange = vi.fn();
     render(<ThemeSwitcher theme="clear" onThemeChange={onThemeChange} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /choose theme/i }));
+    fireEvent.click(screen.getByRole("button", { name: /选择主题/i }));
     fireEvent.click(screen.getByRole("button", { name: /night/i }));
 
     expect(onThemeChange).toHaveBeenCalledWith("night");

@@ -25,7 +25,7 @@ export function SiteFooter() {
 
   return (
     <footer className="site-footer">
-      <nav className="site-dock site-dock-primary" aria-label="Main navigation">
+      <nav className="site-dock site-dock-primary" aria-label="主导航">
         {footerItems.map((item) => {
           const active = isActivePath(pathname, item.href);
 

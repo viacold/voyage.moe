@@ -16,6 +16,7 @@ describe("HomePage", () => {
     expect(screen.getByRole("heading", { name: /published articles/i })).toBeInTheDocument();
     expect(screen.getByText("Hello, voyage.moe")).toBeInTheDocument();
     expect(screen.getByText("Site Roadmap")).toBeInTheDocument();
+    expect(screen.getByText(/first public note for/i)).toBeInTheDocument();
     expect(screen.queryByText("Private Draft")).not.toBeInTheDocument();
     expect(screen.queryByText(/latest release/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/image signals/i)).not.toBeInTheDocument();

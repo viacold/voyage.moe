@@ -45,16 +45,16 @@ export function ThemeSwitcher({ theme, onThemeChange, compact = false }: ThemeSw
       <button
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        aria-label="Choose theme"
+        aria-label="选择主题"
         className={`theme-trigger${compact ? " theme-trigger-compact" : ""}`}
         onClick={() => setIsOpen((open) => !open)}
         type="button"
       >
         <span className={`theme-swatch theme-swatch-${theme}`} aria-hidden="true" />
-        {compact ? null : <span className="theme-trigger-label">Theme</span>}
+        <span className={`theme-trigger-label${compact ? " theme-trigger-label-compact" : ""}`}>主题</span>
       </button>
       {isOpen ? (
-        <div className="theme-panel" role="dialog" aria-label="Theme options">
+        <div className="theme-panel" role="dialog" aria-label="主题选项">
           {themeOptions.map((option) => (
             <button
               className="theme-button"

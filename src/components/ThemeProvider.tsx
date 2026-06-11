@@ -15,9 +15,23 @@ function isThemeId(theme: string | undefined): theme is ThemeId {
   return theme === "clear" || theme === "voyage" || theme === "night" || theme === "archive";
 }
 
+function readStoredTheme() {
+  try {
+    const stored = localStorage.getItem("voyage-theme");
+    return isThemeId(stored ?? undefined) ? (stored as ThemeId) : null;
+  } catch {
+    return null;
+  }
+}
+
 function readDocumentTheme(): ThemeId {
   const theme = document.documentElement.dataset.theme;
-  return isThemeId(theme) ? theme : "clear";
+  if (isThemeId(theme)) {
+    return theme;
+  }
+
+  const stored = readStoredTheme();
+  return stored !== null ? stored : "clear";
 }
 
 function applyDocumentTheme(theme: ThemeId) {
@@ -59,7 +73,7 @@ export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode
     try {
       localStorage.setItem("voyage-theme", theme);
     } catch {
-      // Theme switching still works for the session when storage is unavailable.
+      // Theme switching still works for the current session when storage is unavailable.
     }
   }, [isHydrated, theme]);
 

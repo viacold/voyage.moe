@@ -38,11 +38,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
       <div className="post-feed">
         {posts.map((post) => (
           <ContentCard
+            eyebrow={post.category}
             title={post.title}
             description={post.description}
             href={`/blog/${post.slug}`}
             date={post.date}
             tags={post.tags}
+            cover={post.cover}
             key={post.slug}
           />
         ))}

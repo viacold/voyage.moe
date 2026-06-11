@@ -20,10 +20,10 @@ describe("site chrome", () => {
     );
 
     const headerNav = screen.queryByRole("navigation", { name: /primary navigation/i });
-    const footerMainNav = screen.getByRole("navigation", { name: /main navigation/i });
+    const footerMainNav = screen.getByRole("navigation", { name: /主导航/i });
 
     expect(headerNav).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /choose theme/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /选择主题/i })).toBeInTheDocument();
 
     expect(within(footerMainNav).getByRole("link", { name: "首页" })).toBeInTheDocument();
     expect(within(footerMainNav).getByRole("link", { name: "文章" })).toBeInTheDocument();
